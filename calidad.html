@@ -1,0 +1,20 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"/><title>Calidad IA</title></head>
+<body><h2>Evaluaciones automáticas</h2><pre id="log"></pre>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const supabase = supabasejs.createClient(
+  window.env?.SUPABASE_URL || "https://lnfnusflrgauxwlbvccj.supabase.co",
+  window.env?.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+);
+async function evaluar(){
+  const { data } = await supabase.from('conversaciones').select('*').eq('estado','pendiente');
+  for(const conv of data){
+    const texto = conv.texto_conversacion;
+    // llamada al endpoint de tu backend o edge function que use OPENAI_API_KEY
+    // ejemplo de fetch:
+    await fetch('/api/evaluar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:conv.id,texto})});
+    document.getElementById('log').textContent += `Evaluada conversación ${conv.id}\n`;
+  }
+}
+evaluar();
+</script></body></html>
