@@ -1,0 +1,29 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"/><title>Panel Admin</title>
+<style>
+body{font-family:Arial;background:#f6f2ff;margin:0;padding:20px}
+h1{color:#6b3fa0}
+table{width:100%;border-collapse:collapse;background:#fff}
+th,td{border:1px solid #ddd;padding:8px;text-align:left}
+th{background:#d8c4f2;color:#4b267a}
+button{background:#a47bd9;color:#fff;padding:8px 14px;border:none;border-radius:6px;cursor:pointer}
+</style>
+</head><body>
+<h1>Resultados de Calidad IA</h1>
+<table id="tabla"><thead><tr><th>DNI</th><th>Nombre</th><th>Cartera</th><th>Puntaje</th><th>Comentario</th></tr></thead><tbody></tbody></table>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const supabase = supabasejs.createClient(
+  window.env?.SUPABASE_URL || "https://lnfnusflrgauxwlbvccj.supabase.co",
+  window.env?.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+);
+async function cargar(){
+  const {data}=await supabase.from('evaluaciones').select('*');
+  const tbody=document.querySelector('#tabla tbody');
+  tbody.innerHTML='';
+  data.forEach(r=>{
+    tbody.innerHTML+=`<tr><td>${r.asesor_dni}</td><td>${r.asesor_nombre}</td><td>${r.cartera}</td><td>${r.puntaje}</td><td>${r.comentario}</td></tr>`;
+  });
+}
+cargar();
+</script>
+</body></html>
