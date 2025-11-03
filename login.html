@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Login - Calidad IA</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+body{font-family:Arial,Helvetica,sans-serif;margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background:linear-gradient(120deg,#d7b1ff,#ffffff,#e8d8ff)}
+.card{background:#fff;padding:30px;border-radius:20px;box-shadow:0 8px 20px rgba(0,0,0,0.1);width:350px;text-align:center}
+input{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #ccc}
+button{width:100%;padding:12px;margin-top:14px;background:#9b59b6;color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:600}
+button:hover{background:#8e44ad}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>Ingreso al Sistema</h2>
+  <input id="dni" placeholder="DNI" />
+  <input id="nombre" placeholder="Nombre completo" />
+  <input id="cartera" placeholder="Cartera" />
+  <button id="btnLogin">Ingresar</button>
+  <div id="msg" style="margin-top:10px;color:purple"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const supabase = supabasejs.createClient(
+  window.env?.SUPABASE_URL || "https://lnfnusflrgauxwlbvccj.supabase.co",
+  window.env?.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxuZm51c2ZscmdhdXh3bGJ2Y2NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE4NTc1MTksImV4cCI6MjA3NzQzMzUxOX0.WqFYTm6-vDSe8ashgYbIN-6MjuAnMVTILGjuihnCAxk"
+);
+document.getElementById('btnLogin').onclick = async ()=>{
+  const dni=dni.value.trim(),nombre=nombre.value.trim(),cartera=cartera.value.trim();
+  if(!dni||!nombre){msg.textContent="Completa DNI y nombre";return;}
+  msg.textContent="Conectando...";
+  let {data,error}=await supabase.from('asesores').select('*').eq('dni',dni).limit(1);
+  if(error){msg.textContent="Error de conexión";return;}
+  let asesor=data[0];
+  if(!asesor){
+    const res=await supabase.from('asesores').insert([{dni,nombre,cartera}]).select().single();
+    if(res.error){msg.textContent="Error al crear usuario";return;}
+    asesor=res.data;
+  }
+  localStorage.setItem('calidad_session',JSON.stringify(asesor));
+  msg.textContent=`Bienvenido ${asesor.nombre}`;
+  setTimeout(()=>window.location.href='simulador.html',800);
+};
+</script>
+</body>
+</html>
