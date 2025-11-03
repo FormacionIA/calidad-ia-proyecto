@@ -1,0 +1,18 @@
+<!-- al final del body -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const supabase = supabasejs.createClient(
+  window.env?.SUPABASE_URL || "https://lnfnusflrgauxwlbvccj.supabase.co",
+  window.env?.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+);
+async function guardarConversacion(texto){
+  const sesion=JSON.parse(localStorage.getItem('calidad_session')||"{}");
+  await supabase.from('conversaciones').insert([{
+    asesor_dni: sesion.dni,
+    asesor_nombre: sesion.nombre,
+    cartera: sesion.cartera,
+    texto_conversacion: texto,
+    estado: 'pendiente'
+  }]);
+}
+</script>
