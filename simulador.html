@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simulador de Cobranza – Voz Natural Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f5f6fb; --card:#fff; --brand:#6a0dad; --brand-2:#9c27b0;
+      --text:#1f2937; --muted:#6b7280; --line:#e5e7eb;
+      --ok:#10b981; --warn:#f59e0b; --danger:#ef4444;
+      --yellow:#fff59d;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--text)}
+    .wrap{max-width:1200px;margin:24px auto;padding:0 16px}
+    .app-title{font-size:24px;font-weight:700;margin:4px 0 16px;color:#111827}
+    .top-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:16px}
+    @media (max-width:980px){.top-grid{grid-template-columns:1fr}}
+    .card{background:var(--card);border-radius:10px;box-shadow:0 6px 16px rgba(0,0,0,.06);border:1px solid var(--line)}
+    .card h3{margin:0;padding:14px 16px;border-bottom:1px solid var(--line);font-size:18px;font-weight:700}
+    .card .body{padding:16px}
+    .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    .field input, .field select, .field textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fafafa;outline:none}
+    input:focus, select:focus, textarea:focus{border-color:var(--brand)}
+    .btn{border:none;padding:10px 14px;border-radius:8px;font-weight:600;cursor:pointer}
+    .btn.purple{background:var(--brand);color:#fff}
+    .btn.gray{background:#eef0f6;color:#111827;border:1px solid var(--line)}
+    .btn.success{background:var(--ok);color:#fff}
+    .btn.warning{background:var(--warn);color:#111}
+    .btn.danger{background:var(--danger);color:#fff}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .section-title{margin:18px 0 8px;font-weight:800}
+    .table-card{background:var(--card);border-radius:10px;box-shadow:0 6px 16px rgba(0,0,0,.06);border:1px solid var(--line)}
+    table{width:100%;border-collapse:collapse}
+    thead{background:#f9fafb}
+    th,td{font-size:13px;padding:10px 12px;border-top:1px solid var(--line);text-align:left}
+    tr:hover td{background:#fafafa}
+    .accent-info{background:linear-gradient(180deg,#f6f0ff 0%,#ffffff 60%);border:1px solid #e1d2ff;box-shadow:0 8px 20px rgba(106,13,173,.08)}
+    .accent-info h3{background:linear-gradient(90deg,var(--brand) 0%,#9d6ddc 100%);color:#fff;border-bottom:0;border-radius:10px 10px 0 0}
+    .accent-cuenta{border:2px solid var(--brand);box-shadow:0 8px 20px rgba(106,13,173,.08);border-radius:10px}
+    .accent-cuenta thead{background:#f1e8ff}
+    .accent-cuenta th{color:#4b166b}
+    /* Chat */
+    .drawer{position:fixed;top:0;right:-520px;width:520px;max-width:92vw;height:100vh;background:#f7f5ff;border-left:1px solid var(--line);transition:right .25s;display:flex;flex-direction:column;box-shadow:-12px 0 24px rgba(0,0,0,.08);z-index:50}
+    .drawer.open{right:0}
+    .drawer-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--brand);color:#fff;gap:8px;flex-wrap:wrap}
+    .chat{flex:1;padding:12px;overflow:auto;display:flex;flex-direction:column;gap:8px;position:relative;background:#f9f7ff}
+    .msg{max-width:78%;padding:10px 12px;border-radius:14px;font-size:14px;line-height:1.35}
+    .asesor{align-self:flex-end;background:var(--brand-2);color:#fff;border-bottom-right-radius:4px}
+    .cliente{align-self:flex-start;background:#c4a1ff;color:#1f1147;border-bottom-left-radius:4px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="app-title">Panel de Cobranza</div>
+
+    <div class="top-grid">
+      <section class="card accent-info">
+        <h3>Ficha de Información</h3>
+        <div class="body">
+          <div class="field">
+            <label>Tipo de Cliente</label>
+            <select id="tipoCliente">
+              <option value="banco">Banco</option>
+              <option value="dupree">Dupree</option>
+              <option value="natura">Natura</option>
+            </select>
+          </div>
+          <div class="field"><label>Razón Social</label><input id="rz"></div>
+          <div class="field"><label>Documento</label><input id="doc"></div>
+          <div class="field"><label>Edad</label><input id="edad"></div>
+          <div class="actions">
+            <button class="btn purple" id="btnNueva">Nueva Llamada</button>
+            <button class="btn gray" id="btnVerChat">Ver Conversación</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Gestión</h3>
+        <div class="body">
+          <div class="field"><label>Observación</label><textarea id="obs" rows="3"></textarea></div>
+        </div>
+      </section>
+    </div>
+
+    <h3 class="section-title">Historial</h3>
+    <div class="table-card">
+      <table>
+        <thead><tr><th>Cliente</th><th>Tipo</th><th>Observación</th></tr></thead>
+        <tbody id="historialBody"><tr><td colspan="3" class="muted">Sin registros</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <aside class="drawer" id="drawer">
+    <div class="drawer-head">
+      <h4>Conversación con el Cliente</h4>
+      <button class="btn gray" id="closeDrawer">Cerrar</button>
+    </div>
+    <div class="chat" id="chat"></div>
+  </aside>
+
+  <!-- 📜 Librerías externas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- 💡 Script principal al final (ya no da error) -->
+  <script>
+  document.addEventListener("DOMContentLoaded", function() {
+    console.log("Simulador iniciado correctamente ✅");
+    const drawer = document.getElementById('drawer');
+    const btnVerChat = document.getElementById('btnVerChat');
+    const closeDrawer = document.getElementById('closeDrawer');
+    const chat = document.getElementById('chat');
+    const btnNueva = document.getElementById('btnNueva');
+    const rz = document.getElementById('rz');
+
+    btnVerChat.addEventListener('click',()=>drawer.classList.add('open'));
+    closeDrawer.addEventListener('click',()=>drawer.classList.remove('open'));
+    btnNueva.addEventListener('click',()=>{
+      chat.innerHTML += '<div class="msg asesor">👤 Asesor: Hola '+ (rz.value||'cliente') +', ¿cómo estás?</div>';
+      chat.innerHTML += '<div class="msg cliente">🤖 Cliente: Bien, gracias. ¿Con quién hablo?</div>';
+    });
+  });
+  </script>
+</body>
+</html>
