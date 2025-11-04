@@ -1,18 +1,34 @@
-<!-- al final del body -->
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"/><title>Simulador</title></head>
+<body>
+<h1>Simulador de conversación</h1>
+<textarea id="texto" placeholder="Aquí iría la conversación..."></textarea><br>
+<button id="guardar">Guardar conversación</button>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const supabase = supabasejs.createClient(
   window.env?.SUPABASE_URL || "https://lnfnusflrgauxwlbvccj.supabase.co",
-  window.env?.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  window.env?.SUPABASE_ANON_KEY || "TU_SUPABASE_ANON_KEY"
 );
-async function guardarConversacion(texto){
-  const sesion=JSON.parse(localStorage.getItem('calidad_session')||"{}");
-  await supabase.from('conversaciones').insert([{
+document.getElementById('guardar').onclick = async ()=>{
+  const sesion = JSON.parse(localStorage.getItem('calidad_session')||"{}");
+  const texto=document.getElementById('texto').value.trim();
+  const { data, error } = await supabase.from('conversaciones').insert([{
     asesor_dni: sesion.dni,
     asesor_nombre: sesion.nombre,
     cartera: sesion.cartera,
     texto_conversacion: texto,
     estado: 'pendiente'
-  }]);
-}
+  }]).select().single();
+  if(error){alert("Error al guardar");console.log(error);return;}
+  alert("Conversación guardada y enviada a evaluación");
+  // Llamar a la IA
+  await fetch('/api/evaluar',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({id:data.id,texto})
+  });
+};
 </script>
+</body></html>
