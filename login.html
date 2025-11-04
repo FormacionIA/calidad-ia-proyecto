@@ -6,41 +6,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      font-family: Arial, Helvetica, sans-serif;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: linear-gradient(120deg, #d7b1ff, #ffffff, #e8d8ff);
+      font-family: Arial, sans-serif;
+      display: flex; justify-content: center; align-items: center;
+      height: 100vh; margin: 0;
+      background: linear-gradient(120deg,#d7b1ff,#ffffff,#e8d8ff);
     }
     .card {
-      background: #fff;
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      width: 350px;
-      text-align: center;
+      background: #fff; padding: 30px; border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      width: 350px; text-align: center;
     }
     input {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 10px;
-      border: 1px solid #ccc;
+      width: 100%; padding: 12px; margin: 8px 0;
+      border-radius: 10px; border: 1px solid #ccc;
     }
     button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 14px;
-      background: #9b59b6;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 600;
+      width: 100%; padding: 12px; margin-top: 14px;
+      background: #9b59b6; color: #fff;
+      border: none; border-radius: 10px;
+      cursor: pointer; font-weight: 600;
     }
-    button:hover { background: #8e44ad; }
   </style>
 </head>
 <body>
@@ -50,73 +35,38 @@
     <input id="nombre" placeholder="Nombre completo" />
     <input id="cartera" placeholder="Cartera" />
     <button id="btnLogin">Ingresar</button>
-    <div id="msg" style="margin-top:10px;color:purple"></div>
+    <p id="msg" style="color:purple"></p>
   </div>
 
-  <!-- Conexión a Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // Inicializar conexión a Supabase
     const SUPABASE_URL = "https://lnfnusflrgauxwlbvccj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxuZm51c2ZscmdhdXh3bGJ2Y2NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE4NTc1MTksImV4cCI6MjA3NzQzMzUxOX0.WqFYTm6-vDSe8ashgYbIN-6MjuAnMVTILGjuihnCAxk";
-    const supabase = supabasejs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxuZm51c2ZscmdhdXh3bGJ2Y2NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE4NTc1MTksImV4cCI6MjA3NzQzMzUxOX0.WqFYTm6-vDSe8ashgYbIN-6MjuAnMVTILGjuihnCAxk";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const dniInput = document.getElementById('dni');
-    const nombreInput = document.getElementById('nombre');
-    const carteraInput = document.getElementById('cartera');
-    const msg = document.getElementById('msg');
+    document.getElementById('btnLogin').addEventListener('click', async ()=>{
+      const dni = document.getElementById('dni').value.trim();
+      const nombre = document.getElementById('nombre').value.trim();
+      const cartera = document.getElementById('cartera').value.trim();
+      const msg = document.getElementById('msg');
 
-    async function login() {
-      const dni = dniInput.value.trim();
-      const nombre = nombreInput.value.trim();
-      const cartera = carteraInput.value.trim();
-
-      if (!dni || !nombre) {
-        msg.textContent = "Por favor completa tu DNI y nombre";
+      if(!dni || !nombre){
+        msg.textContent = "Completa DNI y Nombre";
         return;
       }
 
       msg.textContent = "Conectando...";
-
-      // 1️⃣ Buscar si ya existe el asesor
-      const { data, error } = await supabase.from('asesores').select('*').eq('dni', dni).limit(1);
-
-      if (error) {
-        console.error(error);
-        msg.textContent = "Error conectando a Supabase";
-        return;
+      try{
+        const { data, error } = await supabase.from('asesores').insert([{ dni, nombre, cartera }]);
+        if(error) throw error;
+        msg.textContent = "Usuario registrado, entrando...";
+        localStorage.setItem('calidad_session', JSON.stringify({dni,nombre,cartera}));
+        setTimeout(()=>window.location.href="simulador.html",1000);
+      }catch(e){
+        console.error(e);
+        msg.textContent = "Error al conectar con la base";
       }
-
-      let asesor;
-      if (data && data.length > 0) {
-        asesor = data[0];
-      } else {
-        // 2️⃣ Crear asesor si no existe
-        const { data: nuevo, error: err2 } = await supabase
-          .from('asesores')
-          .insert([{ dni, nombre, cartera }])
-          .select()
-          .single();
-
-        if (err2) {
-          console.error(err2);
-          msg.textContent = "Error creando el usuario";
-          return;
-        }
-        asesor = nuevo;
-      }
-
-      // 3️⃣ Guardar datos localmente
-      localStorage.setItem('calidad_session', JSON.stringify(asesor));
-      msg.textContent = `Bienvenido ${asesor.nombre}`;
-      
-      // 4️⃣ Redirigir al simulador
-      setTimeout(() => {
-        window.location.href = "simulador.html";
-      }, 1000);
-    }
-
-    document.getElementById('btnLogin').addEventListener('click', login);
+    });
   </script>
 </body>
 </html>
