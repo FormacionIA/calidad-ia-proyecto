@@ -1,6 +1,7 @@
 // /api/evaluar.js  (Node 18+ compatible con Vercel)
-import fetch from 'node-fetch';
-import { createClient } from '@supabase/supabase-js';
+// Por esto:
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
