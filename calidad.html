@@ -4,17 +4,15 @@
 <script>
 const supabase = supabasejs.createClient(
   window.env?.SUPABASE_URL || "https://lnfnusflrgauxwlbvccj.supabase.co",
-  window.env?.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  window.env?.SUPABASE_ANON_KEY || "TU_SUPABASE_ANON_KEY"
 );
 async function evaluar(){
   const { data } = await supabase.from('conversaciones').select('*').eq('estado','pendiente');
   for(const conv of data){
-    const texto = conv.texto_conversacion;
-    // llamada al endpoint de tu backend o edge function que use OPENAI_API_KEY
-    // ejemplo de fetch:
-    await fetch('/api/evaluar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:conv.id,texto})});
+    await fetch('/api/evaluar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:conv.id,texto:conv.texto_conversacion})});
     document.getElementById('log').textContent += `Evaluada conversación ${conv.id}\n`;
   }
 }
 evaluar();
 </script></body></html>
+
